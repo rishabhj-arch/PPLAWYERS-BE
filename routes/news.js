@@ -10,7 +10,7 @@ const router = express.Router();
 const uploadDir = "uploads";
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
-  console.log("📁 'uploads' folder created automatically");
+  console.log("'uploads' folder created automatically");
 }
 
 const storage = multer.diskStorage({
@@ -25,13 +25,9 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = [
-    "image/webp",
     "image/jpeg",
     "image/jpg",
     "image/png",
-    "image/gif",
-    "image/svg+xml",
-    "image/avif",
   ];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
