@@ -17,7 +17,14 @@ export const createNews = async (req, res) => {
     );
     res.status(201).json({
       message: "News created",
-      news: { name, date, title, tag, description, imageUrl: getImageUrl(req, image) }
+      news: {
+        name,
+        date,
+        title,
+        tag,
+        description,
+        imageUrl: getImageUrl(req, image),
+      },
     });
   } catch (err) {
     console.error(err);
@@ -32,9 +39,11 @@ export const getNews = async (req, res) => {
     limit = parseInt(limit);
     const offset = (page - 1) * limit;
 
-    const [[{ total }]] = await db.query("SELECT COUNT(*) AS total FROM insights_news");
+    const [[{ total }]] = await db.query(
+      "SELECT COUNT(*) AS total FROM insights_news"
+    );
     const [rows] = await db.query(
-      "SELECT * FROM insights_news ORDER BY id DESC LIMIT ? OFFSET ?",
+      "SELECT * FROM insights_news ORDER BY date DESC, id DESC LIMIT ? OFFSET ?",
       [limit, offset]
     );
 
@@ -56,11 +65,13 @@ export const getNews = async (req, res) => {
   }
 };
 
-
 export const deleteNews = async (req, res) => {
   try {
     const { id } = req.params;
-    const [[existing]] = await db.query("SELECT image FROM insights_news WHERE id = ?", [id]);
+    const [[existing]] = await db.query(
+      "SELECT image FROM insights_news WHERE id = ?",
+      [id]
+    );
     if (existing && existing.image) {
       const imagePath = path.join("uploads", existing.image);
       if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
@@ -78,7 +89,10 @@ export const updateNews = async (req, res) => {
     const { name, date, title, tag, description } = req.body;
     const image = req.file ? req.file.filename : null;
 
-    const [[existing]] = await db.query("SELECT * FROM insights_news WHERE id = ?", [id]);
+    const [[existing]] = await db.query(
+      "SELECT * FROM insights_news WHERE id = ?",
+      [id]
+    );
     if (!existing) return res.status(404).json({ message: "News not found" });
 
     let imageToSave = existing.image;
@@ -97,7 +111,14 @@ export const updateNews = async (req, res) => {
 
     res.json({
       message: "News updated successfully",
-      news: { name, date, title, tag, description, imageUrl: getImageUrl(req, imageToSave) }
+      news: {
+        name,
+        date,
+        title,
+        tag,
+        description,
+        imageUrl: getImageUrl(req, imageToSave),
+      },
     });
   } catch (err) {
     console.error(err);
