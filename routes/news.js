@@ -3,7 +3,12 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { verifyToken } from "../middleware/authMiddleware.js";
-import { createNews, getNews, deleteNews, updateNews } from "../controllers/newsController.js";
+import {
+  createNews,
+  getNews,
+  deleteNews,
+  updateNews,
+} from "../controllers/newsController.js";
 
 const router = express.Router();
 
@@ -24,11 +29,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-  ];
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
