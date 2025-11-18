@@ -34,18 +34,27 @@ export const createNews = async (req, res) => {
 
 export const getNews = async (req, res) => {
   try {
-    let { page = 1, limit = 10 } = req.query;
+    let { page = 1, limit = 10, search = "" } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const offset = (page - 1) * limit;
 
-    const [[{ total }]] = await db.query(
-      "SELECT COUNT(*) AS total FROM insights_news"
-    );
-    const [rows] = await db.query(
-      "SELECT * FROM insights_news ORDER BY date DESC, id DESC LIMIT ? OFFSET ?",
-      [limit, offset]
-    );
+    let countQuery = "SELECT COUNT(*) AS total FROM insights_news";
+    let dataQuery = "SELECT * FROM insights_news";
+    let queryParams = [];
+
+    if (search && search.trim() !== "") {
+      const searchTerm = `%${search.trim()}%`;
+      const searchCondition = " WHERE name LIKE ? OR title LIKE ? OR tag LIKE ? OR description LIKE ?";
+      countQuery += searchCondition;
+      dataQuery += searchCondition;
+      queryParams = [searchTerm, searchTerm, searchTerm, searchTerm];
+    }
+
+    const [[{ total }]] = await db.query(countQuery, queryParams);
+
+    dataQuery += " ORDER BY date DESC, id DESC LIMIT ? OFFSET ?";
+    const [rows] = await db.query(dataQuery, [...queryParams, limit, offset]);
 
     const newsWithUrls = rows.map((item) => ({
       ...item,
