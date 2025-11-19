@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import multer from "multer";
 import authRoutes from "./routes/auth.js";
 import newsRoutes from "./routes/news.js";
 import path from "path";
@@ -21,6 +22,26 @@ app.get("/", (req, res) => {
 
 app.use("/api", authRoutes);
 app.use("/api", newsRoutes);
+
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+  
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ message: "File size is too large", error: err.message });
+    }
+    return res.status(400).json({ message: "File upload error", error: err.message });
+  }
+  
+  if (err.message && err.message.includes("Invalid file type")) {
+    return res.status(400).json({ message: err.message });
+  }
+  
+  res.status(err.status || 500).json({
+    message: err.message || "Server error",
+    error: process.env.NODE_ENV === "development" ? err : {}
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
